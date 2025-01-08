@@ -1,40 +1,34 @@
-import subprocess
+import ollama
 
 class TinyLlamaHandler:
-    def __init__(self):
-        self.process = subprocess.Popen(
-            ["ollama", "run", "tinyllama"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1
-        )
+    def __init__(self, model="tinyllama:latest"):
+        """Initialize the TinyLlama handler with the specified model."""
+        print("Initializing TinyLlama...")
+        self.model = model
+        print(f"Using model: {self.model}")
+        print("TinyLlama initialized and ready.")
 
-    def send_query(self, query, timeout=10):
+    def send_query(self, query):
         try:
-            # Send the query
-            self.process.stdin.write(query + "\n")
-            self.process.stdin.flush()
+            # Use the ollama library to generate a response
+            print(f"Sending query: {query}")
+            response = ollama.generate(model=self.model, prompt=query)
 
-            # Read response with timeout
-            response_lines = []
-            while True:
-                line = self.process.stdout.readline().strip()
-                if line == ">>>":  # End of response
-                    break
-                response_lines.append(line)
+            if not response or not response.get("response"):
+                print("No response received from TinyLlama.")
+                return "I'm unable to process that right now."
 
-            return "\n".join(response_lines).strip()
-        except subprocess.TimeoutExpired:
-            print("TinyLlama response timeout.")
-            return "I'm unable to process that right now."
+            final_response = response["response"].strip()
+            print(f"Final response: {final_response}")
+
+            # Ensure the response is concise
+            concise_response = final_response.split(".")[0] + "." if "." in final_response else final_response[:400]
+            return concise_response
+
         except Exception as e:
             print(f"Error communicating with TinyLlama: {e}")
             return "I'm unable to process that right now."
 
     def close(self):
-        if self.process:
-            self.process.stdin.write("/bye\n")
-            self.process.stdin.flush()
-            self.process.terminate()
+        """Perform cleanup if necessary."""
+        print("TinyLlama session closed.")
