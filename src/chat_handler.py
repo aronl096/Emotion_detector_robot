@@ -22,8 +22,9 @@ class TinyLlamaHandler:
             print(f"Final response: {final_response}")
 
             # Ensure the response is concise
-            concise_response = final_response.split(".")[0] + "." if "." in final_response else final_response[:400]
-            return concise_response
+            # concise_response = final_response.split(".")[0] + "." if "." in final_response else final_response[:400]
+            # return concise_response
+            return final_response
 
         except Exception as e:
             print(f"Error communicating with TinyLlama: {e}")
